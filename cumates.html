@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday!</title>
+    <title>Tebak</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Tone.js for sound effects -->
+    <!-- Load Tone.js for sound effects (Used for utilities only) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         /* Custom font and smooth transitions */
@@ -14,9 +14,23 @@
         
         body {
             font-family: 'Inter', sans-serif;
+            /* Initial background gradient (Blue Theme) */
             background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%); 
-            position: relative; /* Needed for absolute positioning of flying elements */
-            overflow: hidden; /* Prevent scrollbars from appearing due to flying elements */
+            position: relative; 
+            overflow-x: hidden; 
+        }
+
+        /* Background transition layer */
+        .revealed-bg {
+            background-color: #f7f9fc; 
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
 
         .fancy-text {
@@ -34,10 +48,10 @@
             animation: jiggle 2s infinite ease-in-out;
             cursor: pointer;
             stroke-width: 1.5; 
-            z-index: 10; /* Ensure button is above flying layer */
+            z-index: 10; 
         }
         
-        /* 2. Keyframes for the "flying" animation */
+        /* 2. Keyframes for the "flying" Memory Burst animation (Full Screen Fly-Away Logic) */
         @keyframes fly {
             0% { 
                 opacity: 0; 
@@ -47,36 +61,34 @@
                 opacity: 0.8;
                 transform: translate(var(--x-start), var(--y-start)) scale(var(--s-start)) rotate(var(--r-start));
             }
-            80% { 
-                opacity: 0.8; 
-            }
             100% { 
                 opacity: 0; 
                 transform: translate(var(--x-end), var(--y-end)) scale(var(--s-end)) rotate(var(--r-end)); 
             }
         }
 
-        /* Styling for the memory elements */
+        /* Styling for the flying memory elements */
         .memory-element {
             position: absolute;
-            width: 70px; /* Small photo size */
+            width: 70px; 
             height: 70px;
             background-color: white;
-            border: 3px solid #ccc; /* Polaroid-like border */
+            border: 3px solid #ccc; 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             border-radius: 8px;
-            animation: fly var(--duration) ease-out forwards;
-            pointer-events: none; /* Ignore clicks */
+            animation: fly var(--duration) ease-out forwards; 
+            pointer-events: none; 
         }
 
-        /* Container for flying elements (full screen) */
+        /* Container for flying elements (full screen, fixed position) */
         #flying-elements-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1; /* Below the card */
+            z-index: 1; /* Below the main card */
+            pointer-events: none;
         }
         
         /* Ensure the main card is above the flying elements */
@@ -100,16 +112,21 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Container for all the floating photo elements -->
+    <!-- Full-screen transition background -->
+    <div id="revealed-bg" class="revealed-bg"></div>
+
+    <!-- Container for all the floating photo elements (Memory Burst) -->
     <div id="flying-elements-container"></div>
 
     <!-- Main Anniversary Card Container -->
-    <div id="anniversary-card" class="w-full max-w-xl bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl text-center transition-all duration-700 hover:shadow-blue-300/80">
+    <div id="anniversary-card" class="w-full max-w-xl bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl text-center transition-all duration-700 hover:shadow-red-300/80">
         
-        <h1 class="text-3xl md:text-5xl fancy-text font-bold text-blue-600 mb-2">
+        <h1 class="text-2xl md:text-3xl fancy-text font-bold text-black-600 mb-2">
             Happy Birthday
         </h1>
-        <h1 class="text-3xl md:text-5xl fancy-text font-bold text-blue-600 mb-2">Ambar Sekar Prawita</h1>
+        <h1 class="text-3xl md:text-5xl fancy-text font-bold text-blue-600 mb-2">
+            Ambar Sekar Prawita
+        </h1>
         <p class="text-lg md:text-xl text-gray-700 mb-8">
             <span id="anniversary-date">11 October 2025</span>
         </p>
@@ -117,11 +134,11 @@
         <!-- Interactive Gift Box Button -->
         <div 
             id="reveal-button"
-            class="gift-box-jiggle text-6xl md:text-8xl text-blue-500 hover:text-blue-600 transition-colors duration-300 mx-auto w-fit"
+            class="gift-box-jiggle text-6xl md:text-8xl text-blue-500 hover:text-red-600 transition-colors duration-500 mx-auto w-fit"
             onclick="handleRevealClick()">
             
             <!-- Inline SVG Gift Box -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-24 h-24 md:w-32 md:h-32">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-24 h-24 md:w-32 md:h-32">
                 <!-- Ribbon on top -->
                 <rect x="3" y="8" width="18" height="4" rx="1"/>
                 <!-- Vertical ribbon -->
@@ -133,7 +150,7 @@
             </svg>
         </div>
         <p class="text-sm text-gray-500 mt-2 mb-10 transition-opacity duration-500" id="tap-instruction">
-            Tap the gift to open your special message!
+            Tekan ikon diatas!
         </p>
 
 
@@ -143,15 +160,21 @@
 
             <div class="border-t-2 border-blue-300 pt-6 mt-6">
                 <p class="fancy-text text-2xl md:text-3xl font-semibold text-red-700 mb-4">
-                   HBD AMBAR &#129395;
+                    HBD Ambar Geprek &#129395;
                 </p>
                 <p class="text-gray-800 text-base md:text-lg leading-relaxed mb-6 italic">
                     Another year has flown by, and my love for you has only grown deeper. You are my greatest adventure, my quietest comfort, and the reason I smile every day. Thank you for making every moment count.
                 </p>
-                <p class="text-xl md:text-2xl fancy-text font-bold text-red-500">
+                <p class="text-xl md:text-2xl fancy-text font-bold text-blue-500">
                     With all my love, <br>
                     [Your Name]
                 </p>
+            </div>
+            
+            <!-- Dedicated Memory Box - Now populated with a static collage by JS -->
+            <div id="memory-display-box" class="mt-8 p-4 bg-blue-50 rounded-xl shadow-inner border border-red-200 h-64 relative overflow-hidden">
+                <p class="text-sm text-blue-700 font-semibold fancy-text mb-2">A Burst of Our Memories (Collage):</p>
+                <!-- Static image elements will be placed here by JS -->
             </div>
         </div>
     </div>
@@ -163,25 +186,36 @@
         const tapInstruction = document.getElementById('tap-instruction');
         const anniversaryCard = document.getElementById('anniversary-card');
         const flyingContainer = document.getElementById('flying-elements-container');
+        const revealedBg = document.getElementById('revealed-bg');
         const body = document.body;
+        const memoryDisplayBox = document.getElementById('memory-display-box');
         
-        // Placeholders and Customization
+        // Placeholders for text replacement
         const partnerNamePlaceholder = "[Partner's Name]";
         const yourNamePlaceholder = "[Your Name]";
         
-        // Customization: CHANGE THESE
-        const PARTNER_NAME = "My Love"; // e.g., "Alex"
-        const YOUR_NAME = "Your Partner"; // e.g., "Sam"
-        const ANNIVERSARY_DATE = "11 October 2025"; // The date of the anniversary
+        // =======================================================
+        // *** CUSTOMIZATION: EDIT THESE VALUES ***
+        // =======================================================
+        const PARTNER_NAME = "My Love";           // Partner's Name for the written message
+        const YOUR_NAME = "Your Partner";         // Your Name for the written message
+        const ANNIVERSARY_DATE = "11 October 2025"; // The date of the event
         
-        // *** NEW: CUSTOMIZE YOUR VOICE MESSAGE HERE ***
-        // You can add tone instructions like "Say tenderly:" or "Say happily:"
+        // CUSTOMIZE YOUR VOICE MESSAGE HERE: 
         const CUSTOM_VOICE_MESSAGE = "Say happily: Happy Birthday, sweetheart!"; 
         
-        // Placeholder image for the flying memories
-        const MEMORY_IMAGE_URL = 'https://placehold.co/70x70/E0F2FE/3B82F6?text=M'; 
+        // *** ARRAY OF IMAGE URLS ***
+        // Add as many public image URLs here as you like!
+        const MEMORY_IMAGE_URLS = [
+            'https://placehold.co/70x70/E0F2FE/3B82F6?text=M1', // Placeholder 1
+            'https://placehold.co/70x70/BEE3F8/2B6CB0?text=M2', // Placeholder 2
+            'https://placehold.co/70x70/90CDF4/4299E1?text=M3', // Placeholder 3
+            'https://placehold.co/70x70/63B3ED/68D391?text=M4',  // Placeholder 4
+            'https://placehold.co/70x70/4299E1/2B6CB0?text=M5',  // Added one more placeholder
+        ];
+        // =======================================================
 
-        // Update placeholders
+        // Update display text with custom values
         document.getElementById('anniversary-date').textContent = ANNIVERSARY_DATE;
         secretMessage.innerHTML = secretMessage.innerHTML
             .replace(partnerNamePlaceholder, PARTNER_NAME)
@@ -189,60 +223,111 @@
         
         let hasBeenClicked = false;
 
-        // --- Memory Burst Animation (Unchanged) ---
+
+        // --- Memory Burst Animation (Full Screen Fly-Away Logic) ---
 
         function startFlyingElements() {
-            const numElements = 15;
-            const containerRect = body.getBoundingClientRect();
+            const numElements = 20; 
             
+            // 1. Get the center point of the gift box (ABSOLUTE position on the screen)
             const buttonRect = revealButton.getBoundingClientRect();
             const startX = buttonRect.left + buttonRect.width / 2;
             const startY = buttonRect.top + buttonRect.height / 2;
-
+            
+            // 2. Get the viewport size for calculating end points
+            const containerRect = body.getBoundingClientRect();
 
             for (let i = 0; i < numElements; i++) {
+                // Stagger the creation of elements for a burst effect
                 setTimeout(() => {
                     const el = document.createElement('div');
                     el.className = 'memory-element';
+
+                    // === Randomly select an image from the array ===
+                    const randomImageUrl = MEMORY_IMAGE_URLS[Math.floor(Math.random() * MEMORY_IMAGE_URLS.length)];
+                    el.style.backgroundImage = `url('${randomImageUrl}')`;
                     
-                    el.style.backgroundImage = `url('${MEMORY_IMAGE_URL}')`;
                     el.style.backgroundSize = 'cover';
                     el.style.backgroundPosition = 'center';
                     
-                    el.style.left = `${startX}px`;
-                    el.style.top = `${startY}px`;
+                    // Initial position (centered on the gift box, relative to the viewport origin 0,0)
+                    // We subtract 35px (half the 70px element size) for perfect centering
+                    el.style.left = `${startX - 35}px`; 
+                    el.style.top = `${startY - 35}px`;  
 
-                    const duration = 5 + Math.random() * 5; 
-                    const delay = Math.random() * 0.5; 
-                    const xEnd = (Math.random() - 0.5) * containerRect.width * 1.5; 
-                    const yEnd = -containerRect.height * (1 + Math.random()); 
-                    const rotation = (Math.random() * 360) - 180; 
+                    // Generate random animation properties
+                    const duration = 5 + Math.random() * 5; // 5s to 10s duration
+                    const delay = Math.random() * 0.5; // 0s to 0.5s delay
+                    
+                    // End Point: Randomly push far outside the viewport
+                    const xEnd = (Math.random() - 0.5) * containerRect.width * 1.5; // Up to 1.5x screen width movement
+                    const yEnd = -containerRect.height * (1 + Math.random()); // Push upwards and off-screen
+                    const rotation = (Math.random() * 720) - 360; // Big rotation
                     const scale = 0.8 + Math.random() * 0.4; 
 
+                    // Apply CSS variables for the animation keyframes
                     el.style.setProperty('--duration', `${duration}s`);
                     el.style.setProperty('--delay', `${delay}s`);
-                    el.style.setProperty('--x-start', `${(Math.random() - 0.5) * 50}px`);
-                    el.style.setProperty('--y-start', `${(Math.random() - 0.5) * 50}px`);
+                    el.style.setProperty('--x-start', '0px');
+                    el.style.setProperty('--y-start', '0px');
                     el.style.setProperty('--s-start', `${0.6 + Math.random() * 0.4}`);
                     el.style.setProperty('--r-start', `${(Math.random() * 20) - 10}deg`);
-                    
                     el.style.setProperty('--x-end', `${xEnd}px`);
                     el.style.setProperty('--y-end', `${yEnd}px`);
                     el.style.setProperty('--s-end', `${scale}`);
                     el.style.setProperty('--r-end', `${rotation}deg`);
 
+                    // Append to the full-screen container
                     flyingContainer.appendChild(el);
                     
+                    // Clean up the element after the animation finishes
                     setTimeout(() => {
                         el.remove();
                     }, duration * 1000 + 500); 
 
-                }, i * 150); 
+                }, i * 100); // Stagger the creation every 100ms for a tighter burst
             }
         }
 
+        // --- New Function: Populates the internal Memory Box with a static collage ---
+        function populateMemoryBox() {
+            // Clear previous content but keep the header text
+            memoryDisplayBox.innerHTML = `
+                <p class="text-sm text-blue-700 font-semibold fancy-text mb-2">A Burst of Our Memories (Collage):</p>
+            `;
 
-        // --- TTS Utility Functions for Audio Playback (Updated to accept message) ---
+            const boxRect = memoryDisplayBox.getBoundingClientRect();
+            const width = 70;
+            const height = 70;
+            
+            // Generate a static collage inside the dedicated box
+            MEMORY_IMAGE_URLS.forEach(url => {
+                const img = document.createElement('div');
+                // Use a class for general styling (box shadow, border, etc.)
+                img.className = 'absolute bg-white border-2 border-white shadow-md rounded-lg transform transition-transform duration-300 hover:scale-105'; 
+                
+                // Randomly position and rotate the image inside the box
+                const maxX = boxRect.width - width - 10; // 10px padding from right
+                const maxY = boxRect.height - height - 10; // 10px padding from bottom
+                
+                const randomX = 5 + Math.random() * maxX;
+                const randomY = 30 + Math.random() * (maxY - 30); // Start below the header text
+                const randomRotation = (Math.random() * 30) - 15; // Small rotation
+
+                img.style.width = `${width}px`;
+                img.style.height = `${height}px`;
+                img.style.left = `${randomX}px`;
+                img.style.top = `${randomY}px`;
+                img.style.transform = `rotate(${randomRotation}deg)`;
+                img.style.backgroundImage = `url('${url}')`;
+                img.style.backgroundSize = 'cover';
+                img.style.backgroundPosition = 'center';
+                
+                memoryDisplayBox.appendChild(img);
+            });
+        }
+
+        // --- TTS Utility Functions for Audio Playback ---
 
         function base64ToArrayBuffer(base64) {
             const binaryString = atob(base64);
@@ -263,17 +348,20 @@
             const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
             const view = new DataView(buffer);
 
+            // RIFF header
             view.setUint32(0, 0x52494646, false);
             view.setUint32(4, 36 + pcm16.length * bytesPerSample, true);
             view.setUint32(8, 0x57415645, false);
+            // 'fmt ' chunk
             view.setUint32(12, 0x666d7420, false);
             view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
+            view.setUint16(20, 1, true); // PCM format
             view.setUint16(22, numChannels, true);
             view.setUint32(24, sampleRate, true);
             view.setUint32(28, byteRate, true);
             view.setUint16(32, blockAlign, true);
-            view.setUint16(34, 16, true);
+            view.setUint16(34, 16, true); // 16 bits per sample
+            // 'data' chunk
             view.setUint32(36, 0x64617461, false);
             view.setUint32(40, pcm16.length * bytesPerSample, true);
 
@@ -286,20 +374,18 @@
             return new Blob([buffer], { type: 'audio/wav' });
         }
 
-        async function playCelebrationChime(messageText) {
+        async function playCustomVoiceMessage(messageText) {
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{
-                    // Use the custom message here
                     parts: [{ text: messageText }] 
                 }],
                 generationConfig: {
                     responseModalities: ["AUDIO"],
                     speechConfig: {
                         voiceConfig: {
-                            // Using the "Puck" voice, which is upbeat. You can try others!
                             prebuiltVoiceConfig: { voiceName: "Puck" } 
                         }
                     }
@@ -349,45 +435,57 @@
                     console.error(`Attempt ${attempt + 1} failed:`, error);
                     attempt++;
                     if (attempt < maxRetries) {
+                        // Exponential backoff delay
                         const delay = Math.pow(2, attempt) * 1000;
                         await new Promise(resolve => setTimeout(resolve, delay));
                     } else {
-                        console.error("Failed to play chime after multiple retries.");
+                        console.error("Failed to play voice message after multiple retries.");
                     }
                 }
             }
         }
 
 
-        // --- Interaction Handler (Updated to use custom message) ---
+        // --- Interaction Handler ---
 
         function handleRevealClick() {
             if (hasBeenClicked) return;
             hasBeenClicked = true;
             
-            // 1. Start the memory burst animation!
+            // 1. Start the full-screen memory burst animation!
             startFlyingElements();
 
-            // 2. Play the sound using the custom message
-            playCelebrationChime(CUSTOM_VOICE_MESSAGE);
+            // 2. Populate the dedicated memory box with the collage!
+            populateMemoryBox();
 
-            // 3. Reveal the message with animation
+            // 3. Play the custom voice message
+            playCustomVoiceMessage(CUSTOM_VOICE_MESSAGE);
+
+            // 4. Reveal the background transition layer
+            revealedBg.style.opacity = '1'; 
+
+            // 5. Reveal the message with animation
             secretMessage.classList.remove('opacity-0', 'h-0', 'scale-90');
             secretMessage.classList.add('opacity-100', 'h-auto', 'scale-100');
-            secretMessage.style.maxHeight = '500px'; 
+            secretMessage.style.maxHeight = '1000px'; 
             
-            // 4. Remove the jiggle effect and tap instruction
+            // 6. Remove the jiggle effect and tap instruction
             revealButton.classList.remove('gift-box-jiggle');
             tapInstruction.classList.add('opacity-0');
 
-            // 5. Update the card look
+            // 7. Update the card look (optional: can add more styling changes here)
             anniversaryCard.classList.remove('hover:shadow-blue-300/80');
 
             // Optional: scroll down to show the message if it overflows
             setTimeout(() => {
-                secretMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (document.body.scrollHeight > window.innerHeight) {
+                    secretMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }, 1000); 
         }
+
+        // Add a friendly console message
+        console.log("Happy Anniversary! Remember to customize the names, date, and image URLs in the script.");
 
     </script>
 
