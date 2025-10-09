@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font and smooth transitions */
+        @import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap');
+     
+        body {
+            font-family: "Gochi Hand", cursive;
+            background: linear-gradient(135deg, #eff6ff 0%, #FFEAE1 100%); 
+            position: relative; 
+            overflow-x: hidden; 
+        }
+
+        /* Background transition layer */
+        .revealed-bg {
+            background-color: #FEF7E6; 
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .fancy-text {
+            font-family: "Gochi Hand", cursive;
+        }
+
+        /* Gift Box animation */
+        @keyframes jiggle {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-1deg) scale(1.02); }
+            75% { transform: rotate(1deg) scale(1.02); }
+        }
+
+        .gift-box-jiggle {
+            animation: jiggle 2s infinite ease-in-out;
+            cursor: pointer;
+            stroke-width: 1.5; 
+            z-index: 10; 
+        }
+        
+        /* Flying Memory animation */
+        @keyframes fly {
+            0% { 
+                opacity: 0; 
+                transform: translate(0, 0) scale(0.5) rotate(0deg); 
+            }
+            10% {
+                opacity: 0.8;
+                transform: translate(var(--x-start), var(--y-start)) scale(var(--s-start)) rotate(var(--r-start));
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(var(--x-end), var(--y-end)) scale(var(--s-end)) rotate(var(--r-end)); 
+            }
+        }
+
+        .memory-element {
+            position: absolute;
+            width: 70px; 
+            height: 70px;
+            background-color: white;
+            border: 3px solid #ccc; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            animation: fly var(--duration) ease-out forwards; 
+            pointer-events: none; 
+        }
+
+        #flying-elements-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        #anniversary-card {
+            z-index: 20; 
+            position: relative;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e6f0ff; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a8cbf7; 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="revealed-bg" class="revealed-bg"></div>
+
+    <div id="flying-elements-container"></div>
+
+    <div id="anniversary-card" class="w-full max-w-xl bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl text-center transition-all duration-700 hover:shadow-red-300/80">
+        
+        <h1 class="text-2xl md:text-3xl fancy-text font-bold text-black-600 mb-2">
+            Happy Birthday
+        </h1>
+        <h1 class="text-3xl md:text-5xl fancy-text font-bold text-blue-600 mb-2">
+            Ambar Sekar Prawita
+        </h1>
+        <p class="text-lg md:text-xl text-gray-700 mb-8">
+            <span id="anniversary-date">11 October 2025</span>
+        </p>
+
+        <div 
+            id="reveal-button"
+            class="gift-box-jiggle text-6xl md:text-8xl text-blue-500 hover:text-red-600 transition-colors duration-500 mx-auto w-fit"
+            onclick="handleRevealClick()">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-24 h-24 md:w-32 md:h-32">
+                <rect x="3" y="8" width="18" height="4" rx="1"/>
+                <path d="M12 8v13"/>
+                <path d="M19 12v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9"/>
+                <path d="M10 8V5a2 2 0 1 1 4 0v3"/>
+            </svg>
+        </div>
+        <p class="text-sm text-gray-500 mt-2 mb-10 transition-opacity duration-500" id="tap-instruction">
+            Tekan ikon diatas!
+        </p>
+
+        <div id="secret-message" class="opacity-0 h-0 transition-all duration-1000 transform scale-90 mt-4 overflow-hidden" 
+            style="max-height: 0px;">
+
+            <div class="border-t-2 border-blue-300 pt-6 mt-6">
+                <p class="fancy-text text-2xl md:text-3xl font-semibold text-red-700 mb-4">
+                    HBD Ambar Geprek &#129395;
+                </p>
+                <p class="text-gray-800 text-base md:text-lg leading-relaxed mb-6 italic">
+                    Pagi Monic (ada probabilitasnya lu baca ini sebelum tidur, tapi pasti udah melewati 00.00 jadi kehitungnya pagi :v), gw mau ngucapin ultah lu aja si sebenarnya, ciee yang udah 20 tahun (tua bgt luwh). Trus kenapa gw sampe buat kek gini? Jujur ini tuh sebenarnya kelinci percobaan gw doang, krn gw bingung mau di tes ke siapa, jadinya ke lu aja :v tapi overall oke ga? Oh iya, met ultah yak moga ipk nya bisa stabil, gk stress + halu akibat di dep mat & moga bisa membanggakan kedua orang tua lu juga.
+                </p>
+                <p class="text-xl md:text-2xl fancy-text font-bold text-red-500">
+                     Wish you all the best :) <br>
+                    <span id="your-name-display"></span>
+                </p>
+            </div>
+            
+            <div id="memory-display-box" class="mt-8 p-4 bg-blue-50 rounded-xl shadow-inner border border-red-200 h-96 relative overflow-hidden">
+                <p class="text-sm text-blue-700 font-semibold fancy-text mb-2">Beberapa aib lu yang gw punya (tapi lu photogenic jirr):</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration & Initialization ---
+        const revealButton = document.getElementById('reveal-button');
+        const secretMessage = document.getElementById('secret-message');
+        const tapInstruction = document.getElementById('tap-instruction');
+        const anniversaryCard = document.getElementById('anniversary-card');
+        const flyingContainer = document.getElementById('flying-elements-container');
+        const revealedBg = document.getElementById('revealed-bg');
+        const body = document.body;
+        const memoryDisplayBox = document.getElementById('memory-display-box');
+        
+        // =======================================================
+        // *** CUSTOMIZATION: EDIT THESE VALUES ***
+        // =======================================================
+        const YOUR_NAME = "- Putra";
+        const ANNIVERSARY_DATE = "11 October 2025";
+        
+        // *** ARRAY OF IMAGE URLS ***
+        // IMPORTANT: Replace these placeholders with your own images!
+        // You must upload your images to your GitHub repository first.
+        const MEMORY_IMAGE_URLS = [
+            'New folder/Screenshot_20251007_163813_Instagram.jpg', // Placeholder 1
+            'New folder/Screenshot_20251007_164808_Instagram.jpg', // Placeholder 2
+            'New folder/Screenshot_20251007_164038_Gallery.jpg', // Placeholder 3
+            'New folder/Screenshot_20251007_163821_Instagram.jpg', // Placeholder 4
+            'New folder/Screenshot_20251007_165028_Instagram.jpg',
+            'New folder/Screenshot_20251007_165110_Instagram.jpg',
+            'New folder/Screenshot_20251009_084604_Gallery.jpg',
+            'New folder/Screenshot_20251009_084419_Gallery.jpg',
+            'New folder/Screenshot_20251009_084656_Gallery.jpg',
+            'New folder/Screenshot_20251009_084940_Gallery.jpg',
+            
+        ];
+        // =======================================================
+
+        // Update display text with custom values
+        document.getElementById('anniversary-date').textContent = ANNIVERSARY_DATE;
+        document.getElementById('your-name-display').textContent = YOUR_NAME;
+        
+        let hasBeenClicked = false;
+
+        // --- Memory Burst Animation ---
+        function startFlyingElements() {
+            const numElements = 20; 
+            const buttonRect = revealButton.getBoundingClientRect();
+            const startX = buttonRect.left + buttonRect.width / 2;
+            const startY = buttonRect.top + buttonRect.height / 2;
+            const containerRect = body.getBoundingClientRect();
+
+            for (let i = 0; i < numElements; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'memory-element';
+                    const randomImageUrl = MEMORY_IMAGE_URLS[Math.floor(Math.random() * MEMORY_IMAGE_URLS.length)];
+                    el.style.backgroundImage = `url('${randomImageUrl}')`;
+                    el.style.backgroundSize = 'cover';
+                    el.style.backgroundPosition = 'center';
+                    el.style.left = `${startX - 35}px`; 
+                    el.style.top = `${startY - 35}px`;  
+
+                    const duration = 5 + Math.random() * 5;
+                    const xEnd = (Math.random() - 0.5) * containerRect.width * 1.5;
+                    const yEnd = -containerRect.height * (1 + Math.random());
+                    const rotation = (Math.random() * 720) - 360;
+                    const scale = 0.8 + Math.random() * 0.4; 
+
+                    el.style.setProperty('--duration', `${duration}s`);
+                    el.style.setProperty('--x-end', `${xEnd}px`);
+                    el.style.setProperty('--y-end', `${yEnd}px`);
+                    el.style.setProperty('--s-end', `${scale}`);
+                    el.style.setProperty('--r-end', `${rotation}deg`);
+
+                    flyingContainer.appendChild(el);
+                    
+                    setTimeout(() => el.remove(), duration * 1000 + 500); 
+
+                }, i * 100);
+            }
+        }
+
+        // --- Populate Memory Box Collage ---
+        // --- Populate Memory Box Collage (Grid Version) ---
+function populateMemoryBox() {
+    // 1. Define grid parameters
+    const cols = 4; // Number of columns in the grid
+    const padding = 10; // Space around the entire grid
+    const spacing = 8; // Space between each photo
+    const paddingTop = 70; // Extra top padding to avoid the header text
+
+    // 2. Get container dimensions
+    const boxRect = memoryDisplayBox.getBoundingClientRect();
+
+    // 3. Calculate the optimal size for each photo to fit the grid
+    const availableWidth = boxRect.width - (2 * padding) - ((cols - 1) * spacing);
+    const imageSize = availableWidth / cols;
+
+    // 4. Loop through each image URL and place it in the grid
+    MEMORY_IMAGE_URLS.forEach((url, i) => {
+        // Calculate the row and column for the current image
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+
+        // Calculate the X and Y position
+        const x = padding + col * (imageSize + spacing);
+        const y = paddingTop + row * (imageSize + spacing);
+
+        // Give a slight, alternating rotation for a "pinned to a board" feel
+        const rotation = (i % 2 === 0) ? 2 : -2; // alternate between 2 and -2 degrees
+
+        // Create the image element
+        const img = document.createElement('div');
+        img.className = 'absolute bg-white border-2 border-white shadow-lg rounded-lg transform transition-transform duration-300 hover:scale-110 hover:z-10'; 
+        
+        // Apply the calculated styles
+        img.style.width = `${imageSize}px`;
+        img.style.height = `${imageSize}px`;
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
+        img.style.transform = `rotate(${rotation}deg)`;
+        img.style.backgroundImage = `url('${url}')`;
+        img.style.backgroundSize = 'cover';
+        img.style.backgroundPosition = 'center';
+        
+        // Add the image to the box
+        memoryDisplayBox.appendChild(img);
+    });
+}
+
+        // --- Interaction Handler ---
+        function handleRevealClick() {
+            if (hasBeenClicked) return;
+            hasBeenClicked = true;
+            
+            startFlyingElements();
+            populateMemoryBox();
+
+            revealedBg.style.opacity = '1'; 
+            secretMessage.classList.remove('opacity-0', 'h-0', 'scale-90');
+            secretMessage.classList.add('opacity-100', 'h-auto', 'scale-100');
+            secretMessage.style.maxHeight = '6000px'; 
+            
+            revealButton.classList.remove('gift-box-jiggle');
+            tapInstruction.classList.add('opacity-0');
+            anniversaryCard.classList.remove('hover:shadow-blue-300/80');
+
+            setTimeout(() => {
+                if (document.body.scrollHeight > window.innerHeight) {
+                    secretMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 1000); 
+        }
+
+        console.log("Happy Anniversary! Remember to customize the names, date, and image URLs in the script.");
+
+    </script>
+</body>
+</html>
