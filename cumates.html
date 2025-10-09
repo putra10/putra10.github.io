@@ -240,33 +240,52 @@
         }
 
         // --- Populate Memory Box Collage ---
-        function populateMemoryBox() {
-            const boxRect = memoryDisplayBox.getBoundingClientRect();
-            const width = 70;
-            const height = 70;
-            
-            MEMORY_IMAGE_URLS.forEach(url => {
-                const img = document.createElement('div');
-                img.className = 'absolute bg-white border-2 border-white shadow-md rounded-lg transform transition-transform duration-300 hover:scale-105'; 
-                
-                const maxX = boxRect.width - width - 10;
-                const maxY = boxRect.height - height - 10;
-                const randomX = 5 + Math.random() * maxX;
-                const randomY = 30 + Math.random() * (maxY - 30);
-                const randomRotation = (Math.random() * 30) - 15;
+        // --- Populate Memory Box Collage (Grid Version) ---
+function populateMemoryBox() {
+    // 1. Define grid parameters
+    const cols = 5; // Number of columns in the grid
+    const padding = 10; // Space around the entire grid
+    const spacing = 8; // Space between each photo
+    const paddingTop = 40; // Extra top padding to avoid the header text
 
-                img.style.width = `${width}px`;
-                img.style.height = `${height}px`;
-                img.style.left = `${randomX}px`;
-                img.style.top = `${randomY}px`;
-                img.style.transform = `rotate(${randomRotation}deg)`;
-                img.style.backgroundImage = `url('${url}')`;
-                img.style.backgroundSize = 'cover';
-                img.style.backgroundPosition = 'center';
-                
-                memoryDisplayBox.appendChild(img);
-            });
-        }
+    // 2. Get container dimensions
+    const boxRect = memoryDisplayBox.getBoundingClientRect();
+
+    // 3. Calculate the optimal size for each photo to fit the grid
+    const availableWidth = boxRect.width - (2 * padding) - ((cols - 1) * spacing);
+    const imageSize = availableWidth / cols;
+
+    // 4. Loop through each image URL and place it in the grid
+    MEMORY_IMAGE_URLS.forEach((url, i) => {
+        // Calculate the row and column for the current image
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+
+        // Calculate the X and Y position
+        const x = padding + col * (imageSize + spacing);
+        const y = paddingTop + row * (imageSize + spacing);
+
+        // Give a slight, alternating rotation for a "pinned to a board" feel
+        const rotation = (i % 2 === 0) ? 2 : -2; // alternate between 2 and -2 degrees
+
+        // Create the image element
+        const img = document.createElement('div');
+        img.className = 'absolute bg-white border-2 border-white shadow-lg rounded-lg transform transition-transform duration-300 hover:scale-110 hover:z-10'; 
+        
+        // Apply the calculated styles
+        img.style.width = `${imageSize}px`;
+        img.style.height = `${imageSize}px`;
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
+        img.style.transform = `rotate(${rotation}deg)`;
+        img.style.backgroundImage = `url('${url}')`;
+        img.style.backgroundSize = 'cover';
+        img.style.backgroundPosition = 'center';
+        
+        // Add the image to the box
+        memoryDisplayBox.appendChild(img);
+    });
+}
 
         // --- Interaction Handler ---
         function handleRevealClick() {
@@ -297,6 +316,7 @@
     </script>
 </body>
 </html>
+
 
 
 
